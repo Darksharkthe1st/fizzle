@@ -754,16 +754,7 @@ function AvenueFuze() {
       colorScheme: FZ.scheme,
     }}>
       <div style={{ padding: '22px 22px 12px', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 10,
-          padding: '6px 18px 8px', borderRadius: 14,
-          background: FZ.danger, color: '#fff',
-          border: `2.5px solid ${FZ.ink}`, boxShadow: `4px 4px 0 ${FZ.ink}`,
-          transform: 'rotate(-2deg)',
-        }}>
-          <span style={{ fontFamily: FZ.display, fontSize: 30, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1 }}>FIZZLE</span>
-          <FzBomb task={{ remaining: 1, total: 1, state: 'active' }} noTag/>
-        </div>
+        <img src="fizzle logo clean.png" alt="Fizzle" style={{ height: 52, display: 'block' }}/>
         <div style={{ flex: 1 }}/>
         <ViewSegment/>
         <FzChip label={`Sort: ${sortLabel}`} onClick={cycleSort} icon="sort"/>
