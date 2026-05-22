@@ -56,15 +56,18 @@ jobs:
         run: |
           VERSION="${{ github.ref_name }}"
           V="${VERSION#v}"
+          {
+            echo "## Downloads"
+            echo ""
+            echo "| Platform | File |"
+            echo "|----------|------|"
+            echo "| **Windows** | \`Fizzle Setup ${V}.exe\` |"
+            echo "| **macOS (Apple Silicon)** | \`Fizzle-${V}-arm64.dmg\` |"
+            echo "| **macOS (Intel)** | \`Fizzle-${V}-x64.dmg\` |"
+            echo "| **Linux** | \`Fizzle-${V}.AppImage\` |"
+          } > /tmp/notes.md
           gh release edit "$VERSION" \
             --repo Darksharkthe1st/fizzle \
-            --notes "## Downloads
-
-| Platform | File |
-|----------|------|
-| **Windows** | \`Fizzle Setup ${V}.exe\` |
-| **macOS (Apple Silicon)** | \`Fizzle-${V}-arm64.dmg\` |
-| **macOS (Intel)** | \`Fizzle-${V}-x64.dmg\` |
-| **Linux** | \`Fizzle-${V}.AppImage\` |"
+            --notes-file /tmp/notes.md
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
