@@ -276,30 +276,31 @@ const SOUNDS = {
   },
 };
 
-// ── Settings persistence ────────────────────────────────────────────────
-const SETTINGS_KEY = 'fizzle.settings';
+// ── Persistence ──────────────────────────────────────────────────────────
 const DEFAULT_SETTINGS = { palette: 'cream', sound: true, animation: 'full' };
 
+// Read the saved file once at startup (synchronous IPC so it's ready before
+// React renders). Falls back to an empty object if the file doesn't exist yet.
+const _saved = (() => {
+  try { return window.electronAPI?.loadData() || {}; } catch { return {}; }
+})();
+
 function loadSettings() {
-  try {
-    const raw = localStorage.getItem(SETTINGS_KEY);
-    if (raw) return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
-  } catch {}
+  if (_saved.settings) return { ...DEFAULT_SETTINGS, ..._saved.settings };
   return DEFAULT_SETTINGS;
 }
 
-// ── Task persistence ─────────────────────────────────────────────────────
-const TASKS_KEY = 'fizzle.tasks';
-
 function loadTasks() {
-  try {
-    const raw = localStorage.getItem(TASKS_KEY);
-    if (raw) {
-      const saved = JSON.parse(raw);
-      return saved.map((t) => t.state === 'defusing' ? { ...t, state: 'active', defusedAt: null } : t);
-    }
-  } catch {}
+  if (_saved.tasks) {
+    return _saved.tasks.map((t) =>
+      t.state === 'defusing' ? { ...t, state: 'active', defusedAt: null } : t
+    );
+  }
   return INITIAL_TASKS;
+}
+
+function saveData(tasks, settings) {
+  try { window.electronAPI?.saveData({ tasks, settings }); } catch {}
 }
 
 // ── Context ─────────────────────────────────────────────────────────────
@@ -315,15 +316,11 @@ function FizzProvider({ children }) {
   const [view, setView] = React.useState('burning'); // 'burning'|'defused'|'detonated'
   const [settings, setSettings] = React.useState(loadSettings);
 
-  // Persist settings.
+  // Persist tasks + settings together, debounced to avoid hammering the disk.
   React.useEffect(() => {
-    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch {}
-  }, [settings]);
-
-  // Persist tasks.
-  React.useEffect(() => {
-    try { localStorage.setItem(TASKS_KEY, JSON.stringify(tasks)); } catch {}
-  }, [tasks]);
+    const t = setTimeout(() => saveData(tasks, settings), 300);
+    return () => clearTimeout(t);
+  }, [tasks, settings]);
 
   const theme = React.useMemo(() => buildFz(settings.palette), [settings.palette]);
 
