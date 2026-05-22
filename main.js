@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron')
+const { app, BrowserWindow, ipcMain, Menu } = require('electron')
 const { autoUpdater } = require('electron-updater')
 const path = require('path')
 const fs = require('fs')
@@ -22,6 +22,8 @@ ipcMain.on('fizzle:save', (_, data) => {
     console.error('fizzle: save failed', e)
   }
 })
+
+Menu.setApplicationMenu(null)
 
 function createWindow() {
   const win = new BrowserWindow({

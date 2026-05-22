@@ -3,26 +3,7 @@
 const DAY_MS = 86400000;
 
 // ── Initial data ────────────────────────────────────────────────────────
-const INITIAL_TASKS = [
-  { id: 'a', name: 'Implement onboarding flow',  total: 28, remaining: 21,   state: 'active',
-    description: 'Hand-off from product on Tues. Slack thread: #onboarding-v2. Three screens, plus a tutorial overlay on first launch.' },
-  { id: 'b', name: 'Q3 launch retrospective',    total: 10, remaining:  5,   state: 'active',
-    description: 'Pull engagement metrics from Mixpanel. Notion doc → /retros/q3.' },
-  { id: 'c', name: 'Migrate auth to OAuth 2.0',  total: 21, remaining: 12,   state: 'active', description: '' },
-  { id: 'd', name: 'Develop password reset',     total: 14, remaining:  1,   state: 'active',
-    description: 'Backend is ready. Need to wire up the email template — see Figma frame 412.' },
-  { id: 'e', name: 'Review PR #482',             total:  2, remaining: 0.18, state: 'active',
-    description: 'https://github.com/org/repo/pull/482 — Jamie\'s refactor of the queue worker. Be thorough; touches the scheduler.' },
-  { id: 'f', name: 'Annual security audit',      total: 90, remaining: 42,   state: 'active', description: '' },
-  { id: 'g', name: 'Draft pricing page copy',    total:  5, remaining:  2,   state: 'active',
-    description: 'Three tiers. Loop in marketing for tone.' },
-  { id: 'h', name: 'Update API docs',            total:  7, remaining: -2,   state: 'overdue',
-    description: 'Should have shipped with v3.2. Embarrassing.' },
-  { id: 'i', name: 'Schedule team offsite',      total: 14, remaining:  9,   state: 'active', description: '' },
-  { id: 'j', name: 'File expense reports',       total:  5, remaining:  3,   state: 'done',
-    defusedAt: Date.now() - 2 * DAY_MS,
-    description: 'Receipts in the Drive folder.' },
-];
+const INITIAL_TASKS = [];
 
 // ── Tone (kept for legacy avenues; Fuze now drives off log scale) ───────
 function getTone(t) {
