@@ -13,7 +13,7 @@ function createWindow() {
     },
   })
 
-  win.loadFile('Fizzle Design.html')
+  win.loadFile('index.html')
 }
 
 app.whenReady().then(() => {

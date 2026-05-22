@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fizzle — design avenues</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Caveat:wght@500;600;700&family=Bricolage+Grotesque:opsz,wght@10..48,500;10..48,600;10..48,700;10..48,800&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; background: #f0eee9; }
+  /* shared keyframes used across all avenues */
+  @keyframes ember-flicker { 0%, 100% { opacity: .9; transform: scale(1); } 50% { opacity: 1; transform: scale(1.25); } }
+  @keyframes ember-glow    { 0%, 100% { filter: drop-shadow(0 0 3px currentColor); } 50% { filter: drop-shadow(0 0 8px currentColor); } }
+  @keyframes spark-fly     { 0% { opacity: 1; transform: translate(0,0); } 100% { opacity: 0; transform: translate(8px, -10px); } }
+  @keyframes stripe-flow   { from { background-position: 0 0; } to { background-position: -28px 0; } }
+  @keyframes shake-overdue { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-1px); } 75% { transform: translateX(1px); } }
+  @keyframes pop-in        { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  @keyframes spark-pulse   { 0%, 100% { transform: scale(1) rotate(0deg); } 50% { transform: scale(1.18) rotate(22deg); } }
+  @keyframes stamp-in      { 0% { transform: rotate(-10deg) scale(2.4); opacity: 0; } 55% { transform: rotate(-10deg) scale(.88); opacity: 1; } 100% { transform: rotate(-10deg) scale(1); } }
+  @keyframes scissor-snip  { 0% { transform: translate(20px, 0) rotate(20deg) scale(.6); opacity: 0; } 35% { transform: translate(0,0) rotate(0deg) scale(1.15); opacity: 1; } 60% { transform: translate(0,0) rotate(-15deg) scale(1); } 100% { transform: translate(-6px,2px) rotate(-20deg) scale(.95); opacity: 1; } }
+  @keyframes modal-in      { from { opacity: 0; transform: scale(.94) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+  @keyframes backdrop-in   { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes row-expand    { from { max-height: 0; opacity: 0; padding-top:0; padding-bottom:0;} to { max-height: 220px; opacity: 1; } }
+  @keyframes confetti-burst{ 0% { transform: translate(0,0) rotate(0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(var(--cx), var(--cy)) rotate(var(--r,180deg)); opacity: 0; } }
+  @keyframes fuse-retract  { to { width: 0; } }
+  @keyframes bomb-fade-out { 0%, 50% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.25); } }
+  @keyframes explosion-pop { 0% { opacity: 0; transform: scale(.3) rotate(-15deg); } 35% { opacity: 1; transform: scale(1.45) rotate(10deg); } 65% { opacity: 1; transform: scale(1.1) rotate(-2deg); } 100% { opacity: 0; transform: scale(1.55) rotate(6deg); } }
+  @keyframes fade-out-soft { to { opacity: 0; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="shared.jsx"></script>
+<script type="text/babel" src="avenue-terminal.jsx"></script>
+<script type="text/babel" src="avenue-blueprint.jsx"></script>
+<script type="text/babel" src="avenue-foolscap.jsx"></script>
+<script type="text/babel" src="avenue-boom.jsx"></script>
+<script type="text/babel" src="avenue-fuze.jsx"></script>
+<script type="text/babel" src="fz-settings.jsx"></script>
+<script type="text/babel" src="app.jsx"></script>
+</body>
+</html>
