@@ -623,7 +623,7 @@ function NewTaskModal() {
 
   const submit = () => {
     const n = name.trim(); if (!n) return;
-    add({ name: n, description: description.trim(), days: Math.max(1, Number(days) || 1) });
+    add({ name: n, description: description.trim(), days: Math.max(1 / 24, Number(days) || 1) });
     setShowAdd(false);
   };
   const dueLabel = new Date(Date.now() + days * DAY_MS).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
