@@ -47,3 +47,24 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_IDENTITY_AUTO_DISCOVERY: false
+
+  finalize:
+    runs-on: ubuntu-latest
+    needs: [build-linux, build-windows, build-mac]
+    steps:
+      - name: Write release notes
+        run: |
+          VERSION="${{ github.ref_name }}"
+          V="${VERSION#v}"
+          gh release edit "$VERSION" \
+            --repo Darksharkthe1st/fizzle \
+            --notes "## Downloads
+
+| Platform | File |
+|----------|------|
+| **Windows** | \`Fizzle Setup ${V}.exe\` |
+| **macOS (Apple Silicon)** | \`Fizzle-${V}-arm64.dmg\` |
+| **macOS (Intel)** | \`Fizzle-${V}-x64.dmg\` |
+| **Linux** | \`Fizzle-${V}.AppImage\` |"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
