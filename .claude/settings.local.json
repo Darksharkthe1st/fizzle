@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(New-Item -ItemType Directory -Force \"C:\\\\Users\\\\farha\\\\GITHUB\\\\fizzle\\\\assets\")",
+      "PowerShell(Copy-Item \"C:\\\\Users\\\\farha\\\\GITHUB\\\\fizzle\\\\fizzle logo cropped.png\" \"C:\\\\Users\\\\farha\\\\GITHUB\\\\fizzle\\\\assets\\\\icon.png\")"
+    ]
+  }
+}

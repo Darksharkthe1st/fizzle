@@ -5,9 +5,52 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder"
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "publish": "electron-builder --publish always"
+  },
+  "build": {
+    "appId": "com.fizzle.app",
+    "productName": "Fizzle",
+    "directories": {
+      "output": "C:\\Users\\farha\\Desktop\\fizzle-build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "shared.jsx",
+      "avenue-fuze.jsx",
+      "fz-settings.jsx",
+      "app.jsx"
+    ],
+    "icon": "assets/icon.png",
+    "publish": {
+      "provider": "github",
+      "owner": "Darksharkthe1st",
+      "repo": "fizzle"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "linux": {
+      "target": "AppImage"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9"
   },
   "devDependencies": {
-    "electron": "^35.0.0"
+    "electron": "^35.0.0",
+    "electron-builder": "^25.1.8"
   }
 }
