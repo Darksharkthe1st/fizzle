@@ -2,6 +2,7 @@
   "name": "fizzle",
   "version": "1.0.0",
   "description": "Fizzle desktop app",
+  "author": "Darksharkthe1st",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -15,7 +16,8 @@
     "appId": "com.fizzle.app",
     "productName": "Fizzle",
     "directories": {
-      "output": "C:\\Users\\farha\\Desktop\\fizzle-build"
+      "output": "dist",
+      "buildResources": "assets"
     },
     "files": [
       "main.js",
