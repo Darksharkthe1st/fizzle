@@ -4,6 +4,14 @@
 function SettingsModal() {
   const { showSettings, setShowSettings, settings, updateSettings, playSound } = useFizz();
   const FZ = useFizz().theme;
+  const [autostart, setAutostart] = React.useState(() =>
+    window.electronAPI ? window.electronAPI.getAutostart() : false
+  );
+
+  function toggleAutostart(v) {
+    setAutostart(v);
+    if (window.electronAPI) window.electronAPI.setAutostart(v);
+  }
 
   React.useEffect(() => {
     if (!showSettings) return;
@@ -84,6 +92,10 @@ function SettingsModal() {
             ]}
             value={settings.animation}
             onChange={(v) => updateSettings({ animation: v })}/>
+        </SettingSection>
+
+        <SettingSection label="Launch at login" subtitle="Start Fizzle when Windows boots">
+          <ToggleRow theme={FZ} value={autostart} onChange={toggleAutostart} onLabel="On" offLabel="Off" />
         </SettingSection>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 22, paddingTop: 14, borderTop: `2px dashed ${FZ.rule}` }}>

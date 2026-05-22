@@ -23,6 +23,17 @@ ipcMain.on('fizzle:save', (_, data) => {
   }
 })
 
+ipcMain.on('fizzle:get-autostart', (event) => {
+  event.returnValue = app.isPackaged
+    ? app.getLoginItemSettings().openAtLogin
+    : false
+})
+
+ipcMain.on('fizzle:set-autostart', (_, enable) => {
+  if (!app.isPackaged) return
+  app.setLoginItemSettings({ openAtLogin: enable })
+})
+
 Menu.setApplicationMenu(null)
 
 function createWindow() {
