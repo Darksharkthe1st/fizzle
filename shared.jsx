@@ -288,11 +288,25 @@ function loadSettings() {
   return DEFAULT_SETTINGS;
 }
 
+// ── Task persistence ─────────────────────────────────────────────────────
+const TASKS_KEY = 'fizzle.tasks';
+
+function loadTasks() {
+  try {
+    const raw = localStorage.getItem(TASKS_KEY);
+    if (raw) {
+      const saved = JSON.parse(raw);
+      return saved.map((t) => t.state === 'defusing' ? { ...t, state: 'active', defusedAt: null } : t);
+    }
+  } catch {}
+  return INITIAL_TASKS;
+}
+
 // ── Context ─────────────────────────────────────────────────────────────
 const FizzCtx = React.createContext(null);
 
 function FizzProvider({ children }) {
-  const [tasks, setTasks] = React.useState(INITIAL_TASKS);
+  const [tasks, setTasks] = React.useState(loadTasks);
   const [now, setNow] = React.useState(0);
   const [expandedId, setExpandedId] = React.useState(null);
   const [showAdd, setShowAdd] = React.useState(false);
@@ -306,7 +320,19 @@ function FizzProvider({ children }) {
     try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch {}
   }, [settings]);
 
+  // Persist tasks.
+  React.useEffect(() => {
+    try { localStorage.setItem(TASKS_KEY, JSON.stringify(tasks)); } catch {}
+  }, [tasks]);
+
   const theme = React.useMemo(() => buildFz(settings.palette), [settings.palette]);
+
+  // Sync CSS custom properties so scrollbar and other CSS-only theming stays in sync.
+  React.useEffect(() => {
+    const r = document.documentElement;
+    r.style.setProperty('--fz-ink',    theme.ink);
+    r.style.setProperty('--fz-paper2', theme.paper2);
+  }, [theme]);
 
   const playSound = React.useCallback((name) => {
     if (!settings.sound) return;

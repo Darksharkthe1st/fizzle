@@ -785,7 +785,7 @@ function AvenueFuze() {
         </div>
       </div>
 
-      <div style={{ overflow: 'auto', flex: 1 }}>
+      <div style={{ overflow: 'auto', flex: 1, scrollbarColor: `var(--fz-ink) var(--fz-paper2)`, scrollbarWidth: 'thin' }}>
         {visibleTasks.length === 0 ? (
           <EmptyState view={view}/>
         ) : (
