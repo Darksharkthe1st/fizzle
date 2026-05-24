@@ -43,6 +43,7 @@ function createWindow() {
     minWidth: 800,
     minHeight: 600,
     title: 'Fizzle',
+    icon: path.join(__dirname, process.platform === 'win32' ? 'assets/icon.ico' : 'assets/icon.png'),
     webPreferences: {
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
