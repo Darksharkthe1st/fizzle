@@ -280,8 +280,23 @@ function loadTasks() {
   return INITIAL_TASKS;
 }
 
-function saveData(tasks, settings) {
-  try { window.electronAPI?.saveData({ tasks, settings }); } catch {}
+function loadHabits()        { return _saved.habits        || []; }
+function loadSpares()        { return _saved.spares        !== undefined ? _saved.spares : 1; }
+function loadSparedThisWeek(){ return _saved.sparedThisWeek || false; }
+function loadWeekStartAt()   { return _saved.weekStartAt   || 0; }
+
+// Returns the timestamp (ms) of the most recent Monday midnight (local time).
+function getLastMonday(now) {
+  const d = new Date(now);
+  const day = d.getDay();                   // 0=Sun, 1=Mon … 6=Sat
+  const diff = day === 0 ? 6 : day - 1;    // days since last Monday
+  d.setDate(d.getDate() - diff);
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+}
+
+function saveData(tasks, settings, habits, spares, sparedThisWeek, weekStartAt) {
+  try { window.electronAPI?.saveData({ tasks, settings, habits, spares, sparedThisWeek, weekStartAt }); } catch {}
 }
 
 // ── Context ─────────────────────────────────────────────────────────────
@@ -292,16 +307,50 @@ function FizzProvider({ children }) {
   const [now, setNow] = React.useState(0);
   const [expandedId, setExpandedId] = React.useState(null);
   const [showAdd, setShowAdd] = React.useState(false);
+  const [showAddHabit, setShowAddHabit] = React.useState(false);
   const [showSettings, setShowSettings] = React.useState(false);
   const [sortMode, setSortMode] = React.useState('urgency');
-  const [view, setView] = React.useState('burning'); // 'burning'|'defused'|'detonated'
+  const [view, setView] = React.useState('burning'); // 'burning'|'defused'|'detonated'|'habits'
   const [settings, setSettings] = React.useState(loadSettings);
 
-  // Persist tasks + settings together, debounced to avoid hammering the disk.
+  // ── Habits state ──────────────────────────────────────────────────────────
+  const [habits, setHabits] = React.useState(loadHabits);
+  const [spares, setSpares] = React.useState(loadSpares);
+  const [sparedThisWeek, setSparedThisWeek] = React.useState(loadSparedThisWeek);
+  const [weekStartAt, setWeekStartAt] = React.useState(loadWeekStartAt);
+
+  // Week-reset: runs once on app start. If a new Monday has passed since the
+  // last saved weekStartAt, process streak evaluation + spare drain.
   React.useEffect(() => {
-    const t = setTimeout(() => saveData(tasks, settings), 300);
+    const now = Date.now();
+    const lastMonday = getLastMonday(now);
+    if (weekStartAt < lastMonday) {
+      setHabits((hs) => hs.map((h) => {
+        if (h.lastResetAt < lastMonday) {
+          const fullWeek = h.weekLog.every(Boolean);
+          return {
+            ...h,
+            streak: fullWeek ? h.streak + 1 : 0,
+            weekLog: [false, false, false, false, false, false, false],
+            lastResetAt: lastMonday,
+          };
+        }
+        return h;
+      }));
+      // Drain one spare if user had spares and didn't use one this week.
+      // Skip drain on true first launch (weekStartAt === 0) so the starting
+      // balance of 1 isn't immediately consumed before the user ever plays.
+      if (weekStartAt > 0 && spares > 0 && !sparedThisWeek) setSpares((s) => Math.max(0, s - 1));
+      setSparedThisWeek(false);
+      setWeekStartAt(lastMonday);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Persist everything together, debounced.
+  React.useEffect(() => {
+    const t = setTimeout(() => saveData(tasks, settings, habits, spares, sparedThisWeek, weekStartAt), 300);
     return () => clearTimeout(t);
-  }, [tasks, settings]);
+  }, [tasks, settings, habits, spares, sparedThisWeek, weekStartAt]);
 
   const theme = React.useMemo(() => buildFz(settings.palette), [settings.palette]);
 
@@ -309,6 +358,8 @@ function FizzProvider({ children }) {
   React.useEffect(() => {
     const r = document.documentElement;
     r.style.setProperty('--fz-ink',    theme.ink);
+    r.style.setProperty('--fz-ink3',   theme.ink3);
+    r.style.setProperty('--fz-rule',   theme.rule);
     r.style.setProperty('--fz-paper2', theme.paper2);
   }, [theme]);
 
@@ -332,12 +383,20 @@ function FizzProvider({ children }) {
   }, [playSound]);
 
   // 'defusing' → 'done' after 2.2s (matches the row's animation window).
+  // Also grants +1 Spare Fuse every 3rd defused task (capped at 2).
   React.useEffect(() => {
     const pending = tasks.filter((t) => t.state === 'defusing');
     if (!pending.length) return;
     const id = setTimeout(() => {
       playSound('pop');
-      setTasks((ts) => ts.map((t) => t.state === 'defusing' ? { ...t, state: 'done' } : t));
+      setTasks((ts) => {
+        const newTs = ts.map((t) => t.state === 'defusing' ? { ...t, state: 'done' } : t);
+        const doneCount = newTs.filter((t) => t.state === 'done').length;
+        if (doneCount > 0 && doneCount % 3 === 0) {
+          setSpares((s) => Math.min(2, s + 1));
+        }
+        return newTs;
+      });
     }, 2200);
     return () => clearTimeout(id);
   }, [tasks, playSound]);
@@ -376,6 +435,41 @@ function FizzProvider({ children }) {
   const updateSettings = React.useCallback((patch) =>
     setSettings((s) => ({ ...s, ...patch })), []);
 
+  // ── Habit actions ─────────────────────────────────────────────────────────
+  const addHabit = React.useCallback((name, description = '') => {
+    const lastMonday = getLastMonday(Date.now());
+    setHabits((hs) => [{
+      id: 'h' + Date.now(),
+      name,
+      description,
+      streak: 0,
+      weekLog: [false, false, false, false, false, false, false],
+      createdAt: Date.now(),
+      lastResetAt: lastMonday,
+    }, ...hs]);
+  }, []);
+
+  const logHabit = React.useCallback((id) => {
+    const todayIdx = (new Date().getDay() + 6) % 7;
+    setHabits((hs) => hs.map((h) => {
+      if (h.id !== id) return h;
+      const weekLog = [...h.weekLog];
+      weekLog[todayIdx] = true;
+      return { ...h, weekLog };
+    }));
+  }, []);
+
+  const patchChain = React.useCallback((id, dayIndex) => {
+    setHabits((hs) => hs.map((h) => {
+      if (h.id !== id) return h;
+      const weekLog = [...h.weekLog];
+      weekLog[dayIndex] = true;
+      return { ...h, weekLog };
+    }));
+    setSpares((s) => Math.max(0, s - 1));
+    setSparedThisWeek(true);
+  }, []);
+
   // Counts & filtered views.
   const counts = React.useMemo(() => ({
     burning: tasks.filter((t) => (t.state === 'active' || t.state === 'defusing') && t.remaining >= 0).length,
@@ -399,13 +493,17 @@ function FizzProvider({ children }) {
     sortMode, cycleSort,
     now, expandedId, toggleExpand,
     showAdd, setShowAdd,
+    showAddHabit, setShowAddHabit,
     showSettings, setShowSettings,
     settings, updateSettings,
     theme, playSound,
     defuse, add, restore, reset, update, remove,
+    habits, spares, sparedThisWeek,
+    addHabit, logHabit, patchChain,
   }), [tasks, visibleTasks, counts, view, sortMode, cycleSort, now, expandedId, toggleExpand,
-       showAdd, showSettings, settings, updateSettings, theme, playSound,
-       defuse, add, restore, reset, update, remove]);
+       showAdd, showAddHabit, showSettings, settings, updateSettings, theme, playSound,
+       defuse, add, restore, reset, update, remove,
+       habits, spares, sparedThisWeek, addHabit, logHabit, patchChain]);
 
   return <FizzCtx.Provider value={value}>{children}</FizzCtx.Provider>;
 }

@@ -66,27 +66,48 @@ This intentional moment preserves the feeling of earned progress.
 
 ## Candle — design rounds
 
-### Round 1 (current)
+### Round 1 (✅ locked)
 
-Three distinct directions shown in `candle-test.html`:
+**Choice: Option B — The Taper.** Classic tall candle silhouette. Flame intensity and
+wax drip accumulation scale with streak. Tilt animation at 50° when lighting a bomb.
+File: `candle-test.html`
 
-- **Option A — The Block**: squat rectangular body, same chunky energy as the bomb.
-  Wax drips accumulate on sides with streak. Flame grows taller.
-- **Option B — The Taper**: classic tall candle silhouette, slightly elegant. Flame
-  intensity scales with streak. Wax drips appear on sides.
-- **Option C — The Bombette**: round body (same shape as the existing bomb SVG) with
-  a flame instead of a fuse. Most native to Fizzle's visual vocabulary.
-  A green ✓ badge appears on the body at streak > 1 (mirrors the "defused" bomb state).
+### Round 2 (✅ locked)
 
-### Round 2 (pending approval of Round 1)
+**7-segment fuse chain.** File: `chain-test.html`
 
-Build the 7-segment fuse chain in isolation. States to show:
-- Unlit (future or not yet logged)
-- Lit/complete (logged day, green with stripe animation)
-- Today/current (orange, pulsing — "you can still log this")
-- Missed (past day, not logged — charred/dark, no animation)
+Locked visual decisions:
 
-### Round 3 (pending)
+| State | Bomb | Fuse |
+|---|---|---|
+| Future | Dim ring, no shine, no wick | Dark (barBg), dim border |
+| Today (unlit) | Full ink border, cold wick stub, dim tip | Orange animated stripe → today |
+| Done | Flame on wick (absolute coords, `transform-box:fill-box`), ✓ badge | Green animated stripe |
+| Missed | 6-pt BOOM star, inner star, "BOOM" in danger red | Red dashed |
+| Burned (after missed) | — | Charred dark, dim border |
+
+Key implementation notes:
+- Flame paths use **absolute SVG coordinates** (tip `16,4` → base `16,14`), no `translate` wrapper. CSS animation and SVG `transform` attribute do not compose — CSS wins and drops the translate.
+- `transform-box: fill-box; transform-origin: 50% 100%` anchors flicker rotation at the flame base.
+- Charred wick stub: `<line x1="16" y1="9" x2="16" y2="14" stroke="#3a2a14" .../>` before the mount rect.
+- Stripe animation: `stripe-flow 1.6s` (done/green), `stripe-flow 0.9s` (burning/orange).
+
+### Round 3 (✅ locked)
+
+**Composed HabitRow + SparesFuse counter + Patch visualization.** File: `habit-row-test.html`
+
+Locked decisions:
+
+| Element | Decision |
+|---|---|
+| Spare Fuse token shape | **Blade fuse** (automotive style) — upright, body + two metal prongs |
+| Spare Fuse counter | Two blade fuse SVGs side-by-side; charged = green glow + intact wire; spent = dark body + broken wire + scorch dot |
+| Patch the chain visual | Blade fuse bridge sits above BOOM bomb, prongs plant on fuse segments each side; chain goes green through it; BOOM fades but stays visible underneath; "+1!" badge floats above body |
+| Habit row grid | `52px (taper) | 160px (name+streak) | 1fr (chain) | 90px (button)` |
+| Log button states | Default ink border → "✦ Lighting…" disabled during tilt → "✓ Done!" in safe green |
+| Streak label | "wk N streak" in mono below habit name |
+
+### Round 4 (current)
 
 Compose candle + fuse chain into a full `HabitRow`. Show alongside a placeholder for the
 Spare Fuses counter.

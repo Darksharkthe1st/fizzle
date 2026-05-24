@@ -1,8 +1,15 @@
+function RootView() {
+  const { view } = useFizz();
+  if (view === 'habits') return <AvenueHabits />;
+  return <AvenueFuze />;
+}
+
 function App() {
   return (
     <FizzProvider>
-      <AvenueFuze />
+      <RootView />
       <NewTaskModal />
+      <NewHabitModal />
       <SettingsModal />
     </FizzProvider>
   );

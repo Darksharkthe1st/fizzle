@@ -33,6 +33,72 @@
   @keyframes bomb-fade-out { 0%, 50% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.25); } }
   @keyframes explosion-pop { 0% { opacity: 0; transform: scale(.3) rotate(-15deg); } 35% { opacity: 1; transform: scale(1.45) rotate(10deg); } 65% { opacity: 1; transform: scale(1.1) rotate(-2deg); } 100% { opacity: 0; transform: scale(1.55) rotate(6deg); } }
   @keyframes fade-out-soft { to { opacity: 0; } }
+
+  /* ── Habits avenue keyframes ── */
+  @keyframes flame-flicker {
+    0%,100% { transform: scaleX(1)    scaleY(1)    rotate(0deg);    }
+    20%      { transform: scaleX(.91)  scaleY(1.07) rotate(-2.5deg); }
+    40%      { transform: scaleX(1.06) scaleY(.94)  rotate(1.5deg);  }
+    60%      { transform: scaleX(.96)  scaleY(1.05) rotate(-1deg);   }
+    80%      { transform: scaleX(1.05) scaleY(.96)  rotate(2.5deg);  }
+  }
+  @keyframes taper-tilt {
+    0%   { transform: translateX(0px)  rotate(0deg);   }
+    22%  { transform: translateX(22px) rotate(0deg);   }
+    48%  { transform: translateX(24px) rotate(-50deg); }
+    68%  { transform: translateX(24px) rotate(-50deg); }
+    88%  { transform: translateX(10px) rotate(0deg);   }
+    100% { transform: translateX(0px)  rotate(0deg);   }
+  }
+  @keyframes bomb-pop {
+    0%   { transform: scale(.65); opacity: 0; }
+    55%  { transform: scale(1.15); opacity: 1; }
+    100% { transform: scale(1);   opacity: 1; }
+  }
+  @keyframes empty-bob  { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+  @keyframes fade-in    { from { opacity: 0; } to { opacity: 1; } }
+
+  /* ── Habits: flame animation classes ── */
+  .flame-tiny   { transform-box: fill-box; transform-origin: 50% 100%; animation: flame-flicker 2.2s ease-in-out infinite; }
+  .flicker      { transform-box: fill-box; transform-origin: 50% 90%;  animation: flame-flicker 1.9s ease-in-out infinite; }
+  .flicker-slow { transform-box: fill-box; transform-origin: 50% 90%;  animation: flame-flicker 2.6s ease-in-out infinite; }
+
+  /* ── Habits: taper candle ── */
+  .taper-col { position: relative; display: flex; justify-content: center; }
+  .taper-col.logging { animation: taper-tilt 1.9s cubic-bezier(.4,1,.5,1) forwards; transform-origin: bottom center; }
+
+  /* ── Habits: bomb chain ── */
+  .bomb-col          { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+  .bomb-col.just-lit { animation: bomb-pop .38s cubic-bezier(.34,1.56,.64,1) both; }
+  .day-lbl           { font-family: "Geist Mono", ui-monospace, monospace; font-size: 7.5px; font-weight: 700; letter-spacing: .06em; color: var(--fz-ink3, rgba(255,233,181,.38)); margin-top: 3px; text-transform: uppercase; }
+
+  /* ── Habits: fuse segments ── */
+  .fuse-seg     { height: 10px; flex: 1; border-radius: 3px; align-self: center; min-width: 0; }
+  .fuse-done    { background: repeating-linear-gradient(115deg,rgba(58,168,74,.55) 0 5px,transparent 5px 10px),rgba(58,168,74,.15); background-size: 24px 100%,100% 100%; border: 1.5px solid rgba(58,168,74,.7); animation: stripe-flow 1.6s linear infinite; }
+  .fuse-burned  { background: #1a1108; border: 1.5px solid var(--fz-rule, rgba(255,233,181,.18)); }
+  .fuse-burning { background: repeating-linear-gradient(115deg,#f0a821 0 6px,transparent 6px 10px),rgba(240,168,33,.22); background-size: 28px 100%,100% 100%; border: 1.5px solid var(--fz-ink, #ffe9b5); animation: stripe-flow .9s linear infinite; }
+  .fuse-broken  { background: rgba(229,57,53,.1); border: 2px dashed rgba(229,57,53,.75); }
+  .fuse-unlit   { background: #06040b; border: 1.5px solid var(--fz-rule, rgba(255,233,181,.14)); }
+  .chain        { display: flex; align-items: center; width: 100%; padding: 4px 0 0; }
+
+  /* ── Habits: rows ── */
+  .habit-row    { display: grid; grid-template-columns: 52px 180px 1fr 90px; gap: 14px; align-items: center; padding: 13px 22px; border-bottom: 2px solid var(--fz-rule, rgba(255,233,181,.14)); transition: background .12s; }
+  .habit-row:hover { background: rgba(255,255,255,.04); }
+  .habit-row:last-child { border-bottom: none; }
+  .habit-name   { font-size: 15px; font-weight: 700; letter-spacing: -.01em; line-height: 1.2; }
+  .habit-streak { font-family: "Geist Mono", ui-monospace, monospace; font-size: 9px; color: var(--fz-ink3, rgba(255,233,181,.38)); letter-spacing: .06em; margin-top: 3px; }
+
+  /* ── Habits: log button ── */
+  .log-btn           { display: inline-flex; align-items: center; justify-content: center; height: 28px; padding: 0 10px; border-radius: 14px; background: transparent; border: 2px solid currentColor; font-family: "Bricolage Grotesque", system-ui, sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: 2px 2px 0 currentColor; white-space: nowrap; width: 100%; transition: transform .1s, box-shadow .1s; color: var(--fz-ink, #ffe9b5); }
+  .log-btn:hover:not(:disabled)  { transform: translate(1px,1px); box-shadow: 1px 1px 0 currentColor; }
+  .log-btn:active:not(:disabled) { transform: translate(2px,2px); box-shadow: none; }
+  .log-btn:disabled  { opacity: .4; cursor: default; }
+  .log-btn.done-state { color: #3aa84a; opacity: .85; cursor: default; }
+  .log-btn.done-state:hover { transform: none !important; }
+
+  /* ── Habits: spare fuse tokens ── */
+  .blade-charged { filter: drop-shadow(0 0 5px rgba(58,168,74,.7)); }
+  .blade-spent   { opacity: .35; }
 </style>
 </head>
 <body>
@@ -45,6 +111,7 @@
 <script type="text/babel" src="shared.jsx"></script>
 <script type="text/babel" src="avenue-fuze.jsx"></script>
 <script type="text/babel" src="fz-settings.jsx"></script>
+<script type="text/babel" src="avenue-habits.jsx"></script>
 <script type="text/babel" src="app.jsx"></script>
 </body>
 </html>

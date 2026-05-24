@@ -697,14 +697,15 @@ function NewTaskModal() {
   );
 }
 
-// ── VIEW SEGMENT (3-way) ────────────────────────────────────────────────
+// ── VIEW SEGMENT (4-way) ────────────────────────────────────────────────
 function ViewSegment() {
-  const { view, setView, counts } = useFizz();
+  const { view, setView, counts, habits } = useFizz();
   const FZ = useFizz().theme;
   const items = [
-    { id: 'burning',   label: 'Burning',   count: counts.burning,   icon: '🔥' },
-    { id: 'defused',   label: 'Defused',   count: counts.defused,   icon: '✓' },
-    { id: 'detonated', label: 'Detonated', count: counts.detonated, icon: '💥' },
+    { id: 'burning',   label: 'Burning',   count: counts.burning,      icon: '🔥' },
+    { id: 'defused',   label: 'Defused',   count: counts.defused,      icon: '✓' },
+    { id: 'detonated', label: 'Detonated', count: counts.detonated,    icon: '💥' },
+    { id: 'habits',    label: 'Habits',    count: habits.length,        icon: '🕯️' },
   ];
   return (
     <div style={{
@@ -738,13 +739,63 @@ function ViewSegment() {
   );
 }
 
+// ── SHARED HEADER ───────────────────────────────────────────────────────
+// Used by both AvenueFuze and AvenueHabits so height + logo are always identical.
+function AppHeader() {
+  const { view, sortMode, cycleSort, setShowAdd, setShowAddHabit, setShowSettings } = useFizz();
+  const FZ = useFizz().theme;
+  const isHabits = view === 'habits';
+  const sortLabel = { urgency: 'Urgency', date: 'Date', name: 'Name' }[sortMode];
+
+  return (
+    <div style={{
+      padding: '14px 22px', display: 'flex', alignItems: 'center',
+      gap: 12, flexShrink: 0, borderBottom: `3px solid ${FZ.ink}`,
+    }}>
+      {/* Logo: red tilted badge (restored) + new logo image replacing the old bomb SVG */}
+      <div style={{
+        display: 'inline-flex', alignItems: 'center', gap: 10,
+        padding: '6px 16px 8px', borderRadius: 14,
+        background: FZ.danger, color: '#fff',
+        border: `2.5px solid ${FZ.ink}`, boxShadow: `4px 4px 0 ${FZ.ink}`,
+        transform: 'rotate(-2deg)',
+      }}>
+        <span style={{
+          fontFamily: FZ.display, fontSize: 28, fontWeight: 800,
+          letterSpacing: '-0.03em', lineHeight: 1,
+        }}>FIZZLE</span>
+        <img src="fizzle logo clean.png" alt="" style={{ height: 36, display: 'block' }}/>
+      </div>
+
+      <div style={{ flex: 1 }}/>
+      <ViewSegment/>
+
+      {/* Sort — active on task tabs, shape-preserved but dimmed on Habits */}
+      <FzChip
+        label={`Sort: ${sortLabel}`}
+        onClick={isHabits ? undefined : cycleSort}
+        icon="sort"
+        dimmed={isHabits}
+      />
+
+      {/* Action button — context-sensitive */}
+      <FzChip
+        label={isHabits ? '+ Add habit' : '+ Light one'}
+        primary
+        onClick={isHabits ? () => setShowAddHabit(true) : () => setShowAdd(true)}
+      />
+
+      <FzIconChip icon="cog" title="Settings" onClick={() => setShowSettings(true)}/>
+    </div>
+  );
+}
+
 // ── AVENUE ──────────────────────────────────────────────────────────────
 function AvenueFuze() {
-  const { visibleTasks, sortMode, cycleSort, setShowAdd, setShowSettings, view, counts } = useFizz();
+  const { visibleTasks, view, counts } = useFizz();
   const FZ = useFizz().theme;
 
   const dots = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14'%3E%3Ccircle cx='2' cy='2' r='0.8' fill='${encodeURIComponent(FZ.dotRgba)}'/%3E%3C/svg%3E")`;
-  const sortLabel = { urgency: 'Urgency', date: 'Date', name: 'Name' }[sortMode];
 
   return (
     <div style={{
@@ -753,19 +804,12 @@ function AvenueFuze() {
       backgroundImage: dots, backgroundSize: '14px 14px', position: 'relative',
       colorScheme: FZ.scheme,
     }}>
-      <div style={{ padding: '22px 22px 12px', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-        <img src="fizzle logo clean.png" alt="Fizzle" style={{ height: 52, display: 'block' }}/>
-        <div style={{ flex: 1 }}/>
-        <ViewSegment/>
-        <FzChip label={`Sort: ${sortLabel}`} onClick={cycleSort} icon="sort"/>
-        <FzChip label="+ Light one" primary onClick={() => setShowAdd(true)}/>
-        <FzIconChip icon="cog" title="Settings" onClick={() => setShowSettings(true)}/>
-      </div>
+      <AppHeader/>
 
       <div style={{
         display: 'grid', gridTemplateColumns: '240px 1fr 76px 100px',
         gap: 14, padding: '10px 22px 8px',
-        borderTop: `3px solid ${FZ.ink}`, borderBottom: `3px solid ${FZ.ink}`,
+        borderBottom: `3px solid ${FZ.ink}`,
         fontFamily: FZ.body, fontSize: 11, color: FZ.ink2, letterSpacing: '0.12em', fontWeight: 700, textTransform: 'uppercase',
       }}>
         <div>Task</div>
@@ -814,22 +858,27 @@ function EmptyState({ view }) {
   );
 }
 
-function FzChip({ label, primary, icon, onClick }) {
+function FzChip({ label, primary, icon, onClick, dimmed }) {
   const FZ = useFizz().theme;
   const [hover, setHover] = React.useState(false);
+  const active = !dimmed && hover;
   return (
-    <button onClick={onClick}
-      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+    <button
+      onClick={dimmed ? undefined : onClick}
+      onMouseEnter={() => !dimmed && setHover(true)}
+      onMouseLeave={() => setHover(false)}
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 6,
         height: 34, padding: '0 14px', borderRadius: 17,
         background: primary ? FZ.ink : FZ.btnBg,
         color: primary ? FZ.paper : FZ.ink,
         border: `2.5px solid ${FZ.ink}`,
-        boxShadow: hover ? `2px 2px 0 ${FZ.ink}` : `4px 4px 0 ${FZ.ink}`,
-        transform: hover ? 'translate(2px,2px)' : 'translate(0,0)',
+        boxShadow: active ? `2px 2px 0 ${FZ.ink}` : `4px 4px 0 ${FZ.ink}`,
+        transform: active ? 'translate(2px,2px)' : 'translate(0,0)',
         fontFamily: FZ.display, fontSize: 14, fontWeight: 700,
-        cursor: 'pointer', transition: 'transform .1s, box-shadow .1s',
+        cursor: dimmed ? 'default' : 'pointer',
+        transition: 'transform .1s, box-shadow .1s',
+        opacity: dimmed ? 0.35 : 1,
       }}>
       {icon === 'sort' && <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M2 3.5h8M3 6h6M4 8.5h4"/></svg>}
       {label}
@@ -862,4 +911,4 @@ function FzIconChip({ icon, title, onClick }) {
   );
 }
 
-Object.assign(window, { AvenueFuze, NewTaskModal });
+Object.assign(window, { AvenueFuze, NewTaskModal, ViewSegment, FzChip, FzIconChip, ConfettiOrbit, AppHeader });

@@ -1,6 +1,6 @@
 {
   "name": "fizzle",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Fizzle desktop app",
   "author": "Darksharkthe1st",
   "main": "main.js",
@@ -25,6 +25,7 @@
       "index.html",
       "shared.jsx",
       "avenue-fuze.jsx",
+      "avenue-habits.jsx",
       "fz-settings.jsx",
       "app.jsx",
       "fizzle logo clean.png"
