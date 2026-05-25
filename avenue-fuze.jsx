@@ -425,7 +425,7 @@ function FzRow({ task }) {
   const expanded = expandedId === task.id;
   const [hover, setHover] = React.useState(false);
 
-  const setDays = (d) => update(task.id, { remaining: d, total: Math.max(task.total || d, d) });
+  const setDays = (d) => update(task.id, { deadlineAt: Date.now() + d * DAY_MS, total: Math.max(task.total || d, d) });
 
   return (
     <div

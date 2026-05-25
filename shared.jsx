@@ -273,9 +273,16 @@ function loadSettings() {
 
 function loadTasks() {
   if (_saved.tasks) {
-    return _saved.tasks.map((t) =>
-      t.state === 'defusing' ? { ...t, state: 'active', defusedAt: null } : t
-    );
+    const now = Date.now();
+    return _saved.tasks.map((t) => {
+      // Reset any in-progress defuse animation.
+      const task = t.state === 'defusing' ? { ...t, state: 'active', defusedAt: null } : t;
+      // Migration: backfill deadlineAt for tasks saved before date-based storage.
+      if (!task.deadlineAt && task.remaining != null) {
+        return { ...task, deadlineAt: now + task.remaining * DAY_MS };
+      }
+      return task;
+    });
   }
   return INITIAL_TASKS;
 }
@@ -374,6 +381,16 @@ function FizzProvider({ children }) {
     return () => clearInterval(id);
   }, []);
 
+  // Derive `remaining` (days) live from the stored absolute `deadlineAt` so
+  // the countdown is always accurate, even after the app has been closed.
+  // Recomputes every second because `now` is in the dependency array.
+  const liveTasks = React.useMemo(() => {
+    const ts = Date.now();
+    return tasks.map((t) =>
+      t.deadlineAt ? { ...t, remaining: (t.deadlineAt - ts) / DAY_MS } : t
+    );
+  }, [tasks, now]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const defuse = React.useCallback((id) => {
     playSound('snip');
     setTasks((ts) => ts.map((t) =>
@@ -408,7 +425,7 @@ function FizzProvider({ children }) {
       id: 'n' + Date.now(),
       name: fields.name,
       total: fields.days,
-      remaining: fields.days,
+      deadlineAt: Date.now() + fields.days * DAY_MS,
       state: 'active',
       description: fields.description || '',
     },
@@ -470,22 +487,21 @@ function FizzProvider({ children }) {
     setSparedThisWeek(true);
   }, []);
 
-  // Counts & filtered views.
+  // Counts & filtered views — use liveTasks so remaining is always current.
   const counts = React.useMemo(() => ({
-    burning: tasks.filter((t) => (t.state === 'active' || t.state === 'defusing') && t.remaining >= 0).length,
-    defused: tasks.filter((t) => t.state === 'done').length,
-    detonated: tasks.filter((t) => t.state !== 'done' && t.remaining < 0).length,
-  }), [tasks]);
+    burning: liveTasks.filter((t) => (t.state === 'active' || t.state === 'defusing') && t.remaining >= 0).length,
+    defused: liveTasks.filter((t) => t.state === 'done').length,
+    detonated: liveTasks.filter((t) => t.state !== 'done' && t.remaining < 0).length,
+  }), [liveTasks]);
 
-  // For Fuze: filter to the active view, then sort. Other avenues still
-  // see the full list via `tasks`.
+  // For Fuze: filter to the active view, then sort.
   const visibleTasks = React.useMemo(() => {
     let pool;
-    if (view === 'defused') pool = tasks.filter((t) => t.state === 'done');
-    else if (view === 'detonated') pool = tasks.filter((t) => t.state !== 'done' && t.remaining < 0);
-    else pool = tasks.filter((t) => (t.state === 'active' || t.state === 'defusing') && t.remaining >= 0);
+    if (view === 'defused') pool = liveTasks.filter((t) => t.state === 'done');
+    else if (view === 'detonated') pool = liveTasks.filter((t) => t.state !== 'done' && t.remaining < 0);
+    else pool = liveTasks.filter((t) => (t.state === 'active' || t.state === 'defusing') && t.remaining >= 0);
     return sortTasks(pool, sortMode);
-  }, [tasks, view, sortMode]);
+  }, [liveTasks, view, sortMode]);
 
   const value = React.useMemo(() => ({
     tasks, visibleTasks, counts,
@@ -500,7 +516,7 @@ function FizzProvider({ children }) {
     defuse, add, restore, reset, update, remove,
     habits, spares, sparedThisWeek,
     addHabit, logHabit, patchChain,
-  }), [tasks, visibleTasks, counts, view, sortMode, cycleSort, now, expandedId, toggleExpand,
+  }), [tasks, liveTasks, visibleTasks, counts, view, sortMode, cycleSort, now, expandedId, toggleExpand,
        showAdd, showAddHabit, showSettings, settings, updateSettings, theme, playSound,
        defuse, add, restore, reset, update, remove,
        habits, spares, sparedThisWeek, addHabit, logHabit, patchChain]);
