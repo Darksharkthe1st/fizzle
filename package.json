@@ -43,7 +43,10 @@
     "mac": {
       "target": {
         "target": "dmg",
-        "arch": ["x64", "arm64"]
+        "arch": [
+          "x64",
+          "arm64"
+        ]
       }
     },
     "linux": {
@@ -58,7 +61,10 @@
     "electron-updater": "^6.3.9"
   },
   "devDependencies": {
-    "electron": "^35.0.0",
+    "electron": "^35.7.5",
     "electron-builder": "^25.1.8"
+  },
+  "allowScripts": {
+    "electron@35.7.5": true
   }
 }
